@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiTugas - Sistem Manajemen Tugas Pendukung & Auto-Kompres Foto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+    }
+    
+    .app-icon-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .app-icon-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.12);
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background-color: white !important; color: black !important; }
+      .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+      .border { border-color: #cbd5e1 !important; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Header Utama Bersih & Modern -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-sm border-b border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Tombol Beranda -->
+      <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-tight text-white">SiTugas</h1>
+            <span class="text-[10px] font-bold bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-400/30">v2.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Sistem Laporan & Tugas Pendukung Lapangan</p>
+        </div>
+      </a>
+
+      <!-- Jam Real-Time & Navigasi -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        
+        <!-- Live Clock -->
+        <div class="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="liveDayText" class="font-bold text-slate-200">Hari</span>
+          <span class="text-slate-600">|</span>
+          <span id="liveDateText" class="text-slate-300">Tanggal</span>
+          <span class="text-slate-600">|</span>
+          <span id="liveTimeText" class="font-mono font-bold text-blue-400">00:00:00 WIB</span>
+        </div>
+
+        <!-- Tombol Menu Ikon (Muncul saat masuk ke dalam sub-halaman) -->
+        <button id="btnHeaderHome" onclick="navigateTo('home')" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          <span>Menu Ikon</span>
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- KOP CETAK DOKUMEN (Hanya Muncul Saat Print / PDF) -->
+  <div class="print-only p-6 border-b-2 border-slate-900 mb-6">
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4 mb-4">
+      <div>
+        <h1 class="text-xl font-black text-slate-950 uppercase">LAPORAN DOKUMENTASI TUGAS OPERASIONAL</h1>
+        <p class="text-xs text-slate-600 mt-0.5">Sistem Laporan Lapangan Petugas Pendukung (Satpam, Kebersihan, Teknisi, Driver & OB)</p>
+      </div>
+      <div class="text-right text-xs text-slate-600">
+        <p>Waktu Cetak: <strong id="printTimestamp">-</strong></p>
+        <p>Divisi: <strong id="printRoleName">Semua Divisi</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER UTAMA -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+    <!-- ========================================================== -->
+    <!-- VIEW 1: BERANDA MENU IKON (APP LAUNCHER)                   -->
+    <!-- ========================================================== -->
+    <div id="view-home" class="space-y-6">
+      
+      <!-- Banner Sambutan -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            Auto-Compress Engine Siap Digunakan
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            Portal Tugas Pendukung Operasional
+          </h2>
+          <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Pilih salah satu ikon divisi di bawah untuk membuka halaman pencatatan tugas. Foto bukti dari kamera HP akan <strong>langsung otomatis terkompres seketika</strong> tanpa menghabiskan kuota dan memori.
+          </p>
+        </div>
+      </div>
+
+      <!-- Ringkasan Statistik Cepat -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs">
+        <div class="border-r border-slate-100 last:border-0 pr-4">
+          <p class="text-xs text-slate-400 font-semibold">Total Tugas Tercatat</p>
+          <p id="homeStatTotalTasks" class="text-2xl font-black text-slate-900 mt-1">0</p>
+        </div>
+        <div class="border-r border-slate-100 last:border-0 pr-4">
+          <p class="text-xs text-blue-600 font-semibold">Tugas Satpam</p>
+          <p id="homeStatSatpam" class="text-2xl font-black text-blue-700 mt-1">0</p>
+        </div>
+        <div class="border-r border-slate-100 last:border-0 pr-4">
+          <p class="text-xs text-emerald-600 font-semibold">Tugas Selesai</p>
+          <p id="homeStatCompleted" class="text-2xl font-black text-emerald-600 mt-1">0</p>
+        </div>
+        <div>
+          <p class="text-xs text-indigo-600 font-semibold">Memori Foto Dihemat</p>
+          <p id="homeStatSaved" class="text-2xl font-black text-slate-900 mt-1">0 B</p>
+        </div>
+      </div>
+
+      <!-- Judul Bagian Menu Ikon -->
+      <div class="pt-2">
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          Pilih Divisi Penugasan
+        </h3>
+        <p class="text-xs text-slate-500 mt-0.5">Klik salah satu ikon untuk membuka modul halaman tugas</p>
+      </div>
+
+      <!-- GRID IKON APLIKASI -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+
+        <!-- 1. IKON SATPAM -->
+        <div onclick="navigateTo('satpam')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-blue-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20 group-hover:scale-110 transition">
+              🛡️
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-blue-700 transition">
+              Satpam / Security
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Patroli lingkungan, pos gerbang utama, serah terima jaga & cek kunci gedung.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgeCountSatpam" class="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+              0 Tugas
+            </span>
+            <span class="text-blue-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Buka <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 2. IKON CLEANING SERVICE -->
+        <div onclick="navigateTo('cleaning')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-emerald-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 group-hover:scale-110 transition">
+              🧹
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-emerald-700 transition">
+              Cleaning Service
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Pembersihan toilet, lobi, selasar, ruang rapat & penanganan tempat sampah.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgeCountCleaning" class="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+              0 Tugas
+            </span>
+            <span class="text-emerald-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Buka <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. IKON TEKNISI & MAINTENANCE -->
+        <div onclick="navigateTo('teknisi')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-amber-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 text-white flex items-center justify-center text-2xl shadow-md shadow-amber-500/20 group-hover:scale-110 transition">
+              🔧
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-amber-700 transition">
+              Teknisi & Maintenance
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Suhu AC ruang kerja/server, panel listrik, genset rutin & pompa air.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgeCountTeknisi" class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+              0 Tugas
+            </span>
+            <span class="text-amber-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Buka <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 4. IKON DRIVER / PENGEMUDI -->
+        <div onclick="navigateTo('driver')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-indigo-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-indigo-500/20 group-hover:scale-110 transition">
+              🚗
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-indigo-700 transition">
+              Driver / Pengemudi
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Pengecekan armada kendaraan kantor, catatan KM & BBM, antar-jemput dinas.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgeCountDriver" class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">
+              0 Tugas
+            </span>
+            <span class="text-indigo-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Buka <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 5. IKON OFFICE BOY (OB) -->
+        <div onclick="navigateTo('ob')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-purple-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-purple-500/20 group-hover:scale-110 transition">
+              ☕
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-purple-700 transition">
+              Office Boy (OB)
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Persiapan ruang rapat, ketersediaan air minum galon pantry & distribusi surat.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgeCountOb" class="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+              0 Tugas
+            </span>
+            <span class="text-purple-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Buka <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 6. IKON SEMUA LOGBOOK -->
+        <div onclick="navigateTo('logbook')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-slate-800 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-800 to-slate-700 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition">
+              📋
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-slate-950 transition">
+              Semua Logbook Tugas
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Tabel rekapitulasi lengkap dari seluruh divisi pendukung.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">
+              Rekap Lengkap
+            </span>
+            <span class="text-slate-800 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Lihat <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 7. IKON CETAK LAPORAN -->
+        <div onclick="openPrintModal()" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-blue-600 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20 group-hover:scale-110 transition">
+              🖨️
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-blue-700 transition">
+              Cetak Laporan
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Format cetak rekap tugas harian & export ke dokumen PDF.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+              Print / PDF
+            </span>
+            <span class="text-blue-600 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Cetak <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 8. IKON STATISTIK KOMPRESI -->
+        <div onclick="navigateTo('kompresi')" class="app-icon-card bg-white rounded-2xl p-5 border border-slate-200/90 cursor-pointer shadow-xs hover:border-cyan-500 group flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-teal-500 text-white flex items-center justify-center text-2xl shadow-md shadow-cyan-500/20 group-hover:scale-110 transition">
+              ⚡
+            </div>
+            <h4 class="text-sm sm:text-base font-extrabold text-slate-900 mt-4 group-hover:text-cyan-700 transition">
+              Efisiensi Kompresi
+            </h4>
+            <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+              Rincian memori tersimpan & kuota yang dihemat dari auto-kompresi foto.
+            </p>
+          </div>
+          <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span id="badgePercentSaved" class="text-[10px] font-black bg-cyan-50 text-cyan-800 px-2 py-0.5 rounded-full border border-cyan-200">
+              0% Hemat
+            </span>
+            <span class="text-cyan-700 font-bold group-hover:translate-x-1 transition flex items-center gap-1 text-[11px]">
+              Rincian <span class="text-base">&rarr;</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- VIEW 2: HALAMAN KHUSUS DIVISI (DIBUKA KETIKA IKON DIKLIK) -->
+    <!-- ========================================================== -->
+    <div id="view-role" class="hidden space-y-6">
+      
+      <!-- Navigasi Kembali & Header Divisi -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="navigateTo('home')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition" title="Kembali ke Beranda">
+            &larr;
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="rolePageIconBadge" class="text-xl">🛡️</span>
+              <h2 id="rolePageTitle" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Layanan Satpam (Security)
+              </h2>
+            </div>
+            <p id="rolePageSubtitle" class="text-xs text-slate-500 mt-0.5">
+              Input laporan bukti tugas foto terkompres otomatis & pantau riwayat kegiatan divisi ini.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="navigateTo('home')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1.5">
+            <span>&larr; Menu Utama</span>
+          </button>
+          <button onclick="openPrintModal()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition flex items-center gap-1.5 shadow-xs">
+            <span>🖨️ Cetak Rekap</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Layout 2 Kolom: Form Input (5 Kolom) & Feed Divisi (7 Kolom) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- FORMULIR INPUT DENGAN AUTO-KOMPRES FOTO -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+          
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black">✍️</span>
+                Input Laporan Tugas
+              </h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Lengkapi form dan ambil/lampirkan foto bukti</p>
+            </div>
+            <span id="formRolePill" class="text-[10px] font-bold px-2.5 py-1 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+              Satpam
+            </span>
+          </div>
+
+          <!-- Template Cepat Tupoksi -->
+          <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+            <span class="text-[11px] font-bold text-blue-900 block mb-2">
+              ⚡ Template Cepat (Klik untuk mengisi otomatis):
+            </span>
+            <div id="quickTemplatesContainer" class="flex flex-wrap gap-1.5">
+              <!-- Diisi otomatis -->
+            </div>
+          </div>
+
+          <!-- FORM SUBMIT -->
+          <form id="taskForm" class="space-y-4">
+            <input type="hidden" id="formRoleInput" name="role" value="satpam">
+
+            <!-- Judul Tugas -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" for="taskTitle">Nama / Judul Tugas *</label>
+              <input type="text" id="taskTitle" required placeholder="Contoh: Patroli Area Gerbang & Cek Gembok"
+                     class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition">
+            </div>
+
+            <!-- Nama Petugas & Shift -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="officerName">Nama Petugas *</label>
+                <input type="text" id="officerName" required value="Budi Santoso" placeholder="Nama Anda"
+                       class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="shiftSelect">Shift Kerja *</label>
+                <select id="shiftSelect" class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition font-medium">
+                  <option value="Shift 1 (Pagi 07:00-15:00)">Shift 1 (Pagi 07:00 - 15:00)</option>
+                  <option value="Shift 2 (Siang 15:00-23:00)">Shift 2 (Siang 15:00 - 23:00)</option>
+                  <option value="Shift 3 (Malam 23:00-07:00)">Shift 3 (Malam 23:00 - 07:00)</option>
+                  <option value="Non-Shift / Reguler">Non-Shift / Reguler</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Lokasi & Status -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="location">Lokasi Penugasan *</label>
+                <input type="text" id="location" required placeholder="Contoh: Pos Gerbang Utama / Lt. 2"
+                       class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="statusSelect">Status Tugas *</label>
+                <select id="statusSelect" class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition font-bold">
+                  <option value="selesai" class="text-emerald-700">🟢 Selesai</option>
+                  <option value="proses" class="text-amber-700">🟡 Sedang Berjalan</option>
+                  <option value="kendala" class="text-rose-700">🔴 Ada Kendala</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Waktu Kejadian -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-slate-800" for="taskTime">Waktu Kejadian (WIB) *</label>
+                <button type="button" id="setNowBtn" class="text-[11px] font-bold text-blue-600 hover:underline">
+                  Waktu Sekarang
+                </button>
+              </div>
+              <input type="datetime-local" id="taskTime" required
+                     class="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 transition">
+              <div class="flex items-center gap-2 text-[11px] pt-0.5">
+                <span id="parsedDayBadge" class="font-bold text-blue-700 bg-white px-2 py-0.5 rounded border border-slate-300">Hari: -</span>
+                <span id="parsedTimeBadge" class="font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-300">Jam: - WIB</span>
+              </div>
+            </div>
+
+            <!-- Catatan Lapangan -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1" for="description">Keterangan / Catatan Tambahan</label>
+              <textarea id="description" rows="2" placeholder="Catatan kondisi, jumlah tamu/barang, atau temuan lapangan..."
+                        class="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition"></textarea>
+            </div>
+
+            <!-- FOTO BUKTI DENGAN AUTO-KOMPRES OTOMATIS -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  Foto Bukti Tugas (Auto-Kompres) *
+                </label>
+                <label class="flex items-center gap-1 text-[11px] text-slate-700 font-semibold cursor-pointer">
+                  <input type="checkbox" id="watermarkToggle" checked class="rounded text-blue-600">
+                  <span>Stempel Waktu di Foto</span>
+                </label>
+              </div>
+
+              <!-- File Input Tersembunyi -->
+              <input type="file" id="photoInput" accept="image/*" class="hidden">
+
+              <!-- Dropzone Sebelum Foto Dipilih -->
+              <div id="dropzone" onclick="document.getElementById('photoInput').click()"
+                   class="border-2 border-dashed border-slate-300 hover:border-blue-600 bg-slate-50 hover:bg-blue-50/50 rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-slate-800">Ambil Foto Kamera HP / Unggah Berkas</p>
+                <p class="text-[11px] text-slate-500">Foto kamera HP 5MB–10MB akan otomatis dikompres seketika</p>
+              </div>
+
+              <!-- Kartu Hasil Kompresi Real-Time -->
+              <div id="compressionResultCard" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-black text-emerald-900">
+                    <svg class="w-4 h-4 text-emerald-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Foto Otomatis Selesai Dicompress!
+                  </span>
+                  <button type="button" onclick="document.getElementById('photoInput').click()" class="text-[11px] font-bold text-blue-600 hover:underline">
+                    Ganti Foto
+                  </button>
+                </div>
+
+                <!-- Perbandingan Ukuran Asli vs Kompres -->
+                <div class="grid grid-cols-3 gap-2 bg-white p-2.5 rounded-xl border border-emerald-100 text-center">
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-medium">Ukuran Asli</p>
+                    <p id="compOrigSize" class="text-xs font-bold text-slate-500 line-through">0 MB</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-medium">Terkompres</p>
+                    <p id="compNewSize" class="text-xs font-bold text-emerald-700">0 KB</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-medium">Hemat Memori</p>
+                    <p id="compSavedPercent" class="text-xs font-black text-blue-600">-0%</p>
+                  </div>
+                </div>
+
+                <div class="relative rounded-xl overflow-hidden border border-slate-300 aspect-video bg-slate-900 shadow-inner">
+                  <img id="compressedPreviewImg" src="" alt="Pratinjau Kompresi" class="w-full h-full object-cover">
+                  <div class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] px-2.5 py-0.5 rounded font-bold backdrop-blur-sm">
+                    ⚡ WebP Teroptimasi
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Tombol Simpan -->
+            <button type="submit" id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-4 rounded-xl shadow-md shadow-blue-200 hover:shadow-lg transition flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span id="submitBtnText">Simpan & Laporkan Tugas</span>
+            </button>
+          </form>
+
+        </div>
+
+        <!-- DAFTAR LOG TUGAS KHUSUS DIVISI INI (7 Kolom) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+              Riwayat Tugas Divisi Ini
+              <span id="roleTasksCountBadge" class="bg-blue-100 text-blue-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+            </h3>
+
+            <input type="text" id="roleSearchInput" placeholder="Cari di divisi ini..."
+                   class="text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 w-48 sm:w-60">
+          </div>
+
+          <!-- Feed Kartu Khusus Divisi -->
+          <div id="roleTasksContainer" class="space-y-3">
+            <!-- Diisi otomatis -->
+          </div>
+
+          <div id="roleEmptyState" class="hidden bg-white rounded-2xl p-10 text-center border border-slate-200">
+            <div class="text-3xl mb-2">📋</div>
+            <h4 class="text-sm font-bold text-slate-800">Belum Ada Tugas di Divisi Ini</h4>
+            <p class="text-xs text-slate-500 mt-1">Gunakan form di sebelah kiri untuk menambahkan laporan baru.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- VIEW 3: SEMUA LOGBOOK (REKAPITULASI SELURUH DIVISI)       -->
+    <!-- ========================================================== -->
+    <div id="view-logbook" class="hidden space-y-5">
+      
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="navigateTo('home')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition" title="Kembali ke Beranda">
+            &larr;
+          </button>
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <span>📋</span> Rekapitulasi Seluruh Tugas Pendukung
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Pantau seluruh laporan tugas dari divisi Satpam, Cleaning, Teknisi, Driver & OB.</p>
+          </div>
+        </div>
+
+        <button onclick="openPrintModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition flex items-center gap-1.5 shadow-xs">
+          <span>🖨️ Cetak Laporan PDF</span>
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-6">
+            <input type="text" id="globalSearchInput" placeholder="Cari nama petugas, judul tugas, lokasi..."
+                   class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="sm:col-span-3">
+            <select id="globalRoleFilter" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option value="all">Semua Divisi</option>
+              <option value="satpam">🛡️ Satpam</option>
+              <option value="cleaning">🧹 Cleaning Service</option>
+              <option value="teknisi">🔧 Teknisi & Maintenance</option>
+              <option value="driver">🚗 Driver / Pengemudi</option>
+              <option value="ob">☕ Office Boy (OB)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-3">
+            <select id="globalStatusFilter" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option value="all">Semua Status</option>
+              <option value="selesai">🟢 Selesai</option>
+              <option value="proses">🟡 Sedang Berjalan</option>
+              <option value="kendala">🔴 Ada Kendala</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Terpadu -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900 text-white font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="px-3.5 py-3">Waktu & Shift</th>
+                <th class="px-3.5 py-3">Petugas & Divisi</th>
+                <th class="px-3.5 py-3">Tugas & Lokasi</th>
+                <th class="px-3.5 py-3">Foto Bukti</th>
+                <th class="px-3.5 py-3">Status</th>
+                <th class="px-3.5 py-3 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="globalTableBody" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Diisi otomatis -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- VIEW 4: PUSAT EFISIENSI & STATISTIK KOMPRESI              -->
+    <!-- ========================================================== -->
+    <div id="view-kompresi" class="hidden space-y-6">
+      
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button onclick="navigateTo('home')" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition">
+            &larr;
+          </button>
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <span>⚡</span> Pusat Efisiensi Auto-Kompresi Foto
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis penghematan bandwidth, kuota petugas, dan memori penyimpanan server.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+          <p class="text-xs text-slate-500 font-bold">Total Ukuran Foto Mentah HP</p>
+          <p id="statsRawSize" class="text-3xl font-black text-slate-900 mt-2">0 B</p>
+          <p class="text-[11px] text-slate-400 mt-1">Ukuran kamera smartphone sebelum kompres</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+          <p class="text-xs text-blue-600 font-bold">Ukuran Tersimpan (WebP)</p>
+          <p id="statsCompSize" class="text-3xl font-black text-blue-700 mt-2">0 B</p>
+          <p class="text-[11px] text-emerald-600 font-bold mt-1">Sangat ringan & cepat dimuat</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-emerald-200 bg-emerald-50/40 shadow-xs">
+          <p class="text-xs text-emerald-800 font-bold">Total Kuota & Memori Dihemat</p>
+          <p id="statsSavedSize" class="text-3xl font-black text-emerald-700 mt-2">0 B</p>
+          <p id="statsSavedPct" class="text-[11px] text-emerald-800 font-black mt-1">Hemat 0% kapasitas server</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <h3 class="text-sm font-bold text-slate-900">Cara Kerja Auto-Kompresi Seketika:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+            <span class="font-extrabold text-blue-700 text-sm">1. Tangkapan Kamera HP</span>
+            <p>Petugas mengambil foto beresolusi tinggi (5MB s/d 10MB) di lapangan.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+            <span class="font-extrabold text-blue-700 text-sm">2. Instant Canvas Compression</span>
+            <p>Dalam ~150 milidetik, engine HTML5 Canvas mengompres resolusi & membubuhkan stempel waktu.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+            <span class="font-extrabold text-blue-700 text-sm">3. Upload 0.2 Detik</span>
+            <p>Hanya ~180KB - 250KB yang dikirim ke server. Sangat ramah sinyal HP dan hemat memori.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Lembar Tanda Tangan Cetak (Print Only) -->
+    <div class="print-only mt-10 pt-6 border-t-2 border-slate-400">
+      <div class="grid grid-cols-2 gap-6 text-center text-xs">
+        <div>
+          <p class="text-slate-600 mb-14">Petugas Pelaksana,</p>
+          <p class="font-bold border-t border-slate-400 pt-1 w-3/5 mx-auto" id="sigName">Budi Santoso</p>
+        </div>
+        <div>
+          <p class="text-slate-600 mb-14">Koordinator Lapangan / Pengawas,</p>
+          <p class="font-bold border-t border-slate-400 pt-1 w-3/5 mx-auto">( ........................................ )</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Lightbox Foto -->
+  <div id="photoModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4" onclick="closePhotoModal()">
+    <div class="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700" onclick="event.stopPropagation()">
+      <div class="absolute top-3 right-3 z-10">
+        <button onclick="closePhotoModal()" class="w-8 h-8 rounded-full bg-black/70 text-white hover:bg-black flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+      <img id="modalImg" src="" alt="Bukti Foto Penuh" class="max-w-full max-h-[80vh] object-contain mx-auto">
+      <div class="p-3 bg-slate-900 text-white text-xs flex items-center justify-between border-t border-slate-800">
+        <div>
+          <span id="modalCaption" class="font-bold text-white">Bukti Tugas Lapangan</span>
+          <p class="text-[10px] text-slate-400">Dokumentasi Terverifikasi</p>
+        </div>
+        <a id="modalDownloadLink" href="" download class="text-blue-400 font-bold hover:underline">Unduh Berkas WebP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifikasi -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 text-xs font-bold hidden flex items-center gap-2 transition-all">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Notifikasi</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/compressor.js"></script>
+  <script>
+    // State
+    let currentView = 'home';
+    let activeRole = 'satpam';
+    let allTasks = [];
+    let compressedBlob = null;
+    let originalFileSize = 0;
+
+    const INDONESIAN_DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const INDONESIAN_MONTHS = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    // Data Konfigurasi Divisi & Template
+    const ROLE_CONFIG = {
+      satpam: {
+        title: "Tugas Satpam (Security)",
+        shortName: "Satpam",
+        icon: "🛡️",
+        subtitle: "Patroli lingkungan, pos gerbang utama, serah terima jaga & cek kunci gedung.",
+        pillClass: "bg-blue-50 text-blue-700 border-blue-200",
+        templates: [
+          { title: "Patroli Area Lingkungan & Pagar Batas", loc: "Titik Pantau Keliling", desc: "Patroli keliling keamanan gedung dan pagar batas. Kondisi aman dan terkendali." },
+          { title: "Pemeriksaan Tamu & Kendaraan Masuk", loc: "Pos Gerbang Utama", desc: "Pemeriksaan kartu identitas tamu dan pengecekan kendaraan masuk." },
+          { title: "Pengecekan Kunci Pintu & Jendela Malam", loc: "Lantai 1 - 4 Gedung", desc: "Pengecekan pintu dan jendela kantor terkunci rapat setelah jam operasional." },
+          { title: "Serah Terima Tugas Jaga Shift", loc: "Pos Komando Utama", desc: "Serah terima inventaris HT, kunci master, senter patroli, dan buku register jaga." }
+        ]
+      },
+      cleaning: {
+        title: "Tugas Cleaning Service",
+        shortName: "Cleaning",
+        icon: "🧹",
+        subtitle: "Pembersihan toilet, lobi, selasar, ruang rapat & penanganan tempat sampah.",
+        pillClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        templates: [
+          { title: "Pembersihan & Sanitasi Toilet", loc: "Toilet Lt. 1 & 2", desc: "Pembersihan kloset, wastafel, cermin, lantai menggunakan disinfektan. Sabun cuci tangan dan tisu telah diisi penuh." },
+          { title: "Sapu & Pel Area Lobi Utama & Selasar", loc: "Lobi Utama", desc: "Lantai dipel kering dan bersih dengan larutan pembersih standar." },
+          { title: "Pengosongan Tempat Sampah Kantor", loc: "Ruang Rapat & Kerja", desc: "Pengosongan tempat sampah ke TPS luar dan penggantian plastik sampah baru." },
+          { title: "Pembersihan Kaca Jendela & Fasad", loc: "Fasad Depan Gedung", desc: "Kaca luar dan dalam dibersihkan dari debu jalanan menggunakan glass cleaner." }
+        ]
+      },
+      teknisi: {
+        title: "Tugas Teknisi & Maintenance",
+        shortName: "Teknisi",
+        icon: "🔧",
+        subtitle: "Suhu AC ruang kerja/server, panel listrik, genset rutin & pompa air.",
+        pillClass: "bg-amber-50 text-amber-700 border-amber-200",
+        templates: [
+          { title: "Pemeriksaan Suhu & Filter AC", loc: "Ruang Server & Aula", desc: "Suhu ruangan stabil di 20°C. Pembersihan filter udara indoor unit AC berjalan normal." },
+          { title: "Inspeksi Panel Listrik & Genset", loc: "Ruang Panel Utama & Genset", desc: "Tegangan 380V seimbang. Uji coba genset cadangan 15 menit, level solar tangki harian 85%." },
+          { title: "Pengecekan Pompa Air & Tandon", loc: "Rooftop / Tandon Utama", desc: "Pompa booster otomatis bekerja baik, suplai air bersih mengalir normal." },
+          { title: "Perbaikan Sarana Penerangan Gedung", loc: "Koridor Sayap Barat", desc: "Penggantian lampu LED panel yang padam di selasar lantai 2." }
+        ]
+      },
+      driver: {
+        title: "Tugas Driver / Pengemudi",
+        shortName: "Driver",
+        icon: "🚗",
+        subtitle: "Pengecekan armada kendaraan kantor, catatan KM & BBM, antar-jemput dinas.",
+        pillClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+        templates: [
+          { title: "Pemeriksaan Kelaikan Armada Kendaraan", loc: "Garasi Operasional", desc: "Pengecekan tekanan angin ban, oli mesin, air wiper, rem, dan surat kelengkapan kendaraan." },
+          { title: "Layanan Antar-Jemput Operasional", loc: "Rute Kantor - Lokasi Kegiatan PP", desc: "Tugas operasional antar-jemput berjalan lancar dan tepat waktu. KM Awal: 38.100, KM Akhir: 38.180." },
+          { title: "Pencucian & Kebersihan Kendaraan", loc: "Tempat Cuci Armada", desc: "Pencucian bodi luar dan vakum interior armada mobil operasional." }
+        ]
+      },
+      ob: {
+        title: "Tugas Office Boy (OB)",
+        shortName: "Office Boy",
+        icon: "☕",
+        subtitle: "Persiapan ruang rapat, ketersediaan air minum galon pantry & distribusi surat.",
+        pillClass: "bg-purple-50 text-purple-700 border-purple-200",
+        templates: [
+          { title: "Persiapan Ruang Rapat & Sarana Audio", loc: "Ruang Rapat Utama", desc: "Penataan meja, mikrofon, proyektor, serta penyediaan air mineral dan snack rapat." },
+          { title: "Pengecekan Ketersediaan Air Galon & Pantry", loc: "Pantry Lantai 1-4", desc: "Penggantian galon air minum habis dan penataan perlengkapan pantry." },
+          { title: "Penyortiran & Distribusi Berkas / Paket", loc: "Resepsionis / TU", desc: "Pengantaran surat masuk dan paket ekspedisi ke subbagian terkait." }
+        ]
+      }
+    };
+
+    // Navigasi Antar Halaman Ikon (SPA Navigator)
+    function navigateTo(target) {
+      currentView = target;
+      
+      const views = ['view-home', 'view-role', 'view-logbook', 'view-kompresi'];
+      views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('hidden');
+      });
+
+      const btnHome = document.getElementById('btnHeaderHome');
+
+      if (target === 'home') {
+        document.getElementById('view-home').classList.remove('hidden');
+        btnHome.classList.add('hidden');
+        btnHome.classList.remove('inline-flex');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        fetchStats();
+        return;
+      }
+
+      btnHome.classList.remove('hidden');
+      btnHome.classList.add('inline-flex');
+
+      if (['satpam', 'cleaning', 'teknisi', 'driver', 'ob'].includes(target)) {
+        activeRole = target;
+        setupRolePage(target);
+        document.getElementById('view-role').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        renderRoleTasks();
+      } else if (target === 'logbook') {
+        document.getElementById('view-logbook').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        renderGlobalTable();
+      } else if (target === 'kompresi') {
+        document.getElementById('view-kompresi').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        fetchStats();
+      }
+    }
+
+    // Persiapan Halaman Khusus Divisi
+    function setupRolePage(roleKey) {
+      const cfg = ROLE_CONFIG[roleKey];
+      if (!cfg) return;
+
+      document.getElementById('rolePageIconBadge').textContent = cfg.icon;
+      document.getElementById('rolePageTitle').textContent = cfg.title;
+      document.getElementById('rolePageSubtitle').textContent = cfg.subtitle;
+      document.getElementById('formRoleInput').value = roleKey;
+      
+      const rolePill = document.getElementById('formRolePill');
+      rolePill.textContent = cfg.shortName;
+      rolePill.className = `text-[10px] font-bold px-2.5 py-1 rounded-full border ${cfg.pillClass}`;
+
+      // Render Template Cepat
+      const container = document.getElementById('quickTemplatesContainer');
+      container.innerHTML = '';
+      cfg.templates.forEach(t => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-[11px] bg-white hover:bg-blue-50 text-slate-700 font-semibold px-2.5 py-1 rounded-lg border border-slate-200 transition text-left shadow-2xs';
+        btn.textContent = t.title;
+        btn.onclick = () => {
+          document.getElementById('taskTitle').value = t.title;
+          document.getElementById('location').value = t.loc;
+          document.getElementById('description').value = t.desc;
+          showToast('Template diterapkan!', '⚡');
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // Render Tugas Khusus Divisi Aktif
+    function renderRoleTasks() {
+      const container = document.getElementById('roleTasksContainer');
+      const emptyState = document.getElementById('roleEmptyState');
+      const query = (document.getElementById('roleSearchInput').value || '').toLowerCase().trim();
+
+      const filtered = allTasks.filter(t => {
+        if (t.role !== activeRole) return false;
+        if (query) {
+          const text = `${t.task_title} ${t.officer_name} ${t.location} ${t.description}`.toLowerCase();
+          return text.includes(query);
+        }
+        return true;
+      });
+
+      document.getElementById('roleTasksCountBadge').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      container.innerHTML = filtered.map(task => {
+        const cfg = ROLE_CONFIG[task.role] || { icon: '📋', shortName: 'Umum', pillClass: 'bg-slate-100' };
+        const statusBadge = getStatusBadge(task.status);
+
+        return `
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:shadow-md transition space-y-3">
+            
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bold border ${cfg.pillClass}">
+                  ${cfg.icon} ${cfg.shortName}
+                </span>
+                <span class="text-xs text-slate-400 font-medium">${task.shift}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${statusBadge}
+                <button onclick="deleteTask('${task.id}')" title="Hapus Bukti" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-slate-100 transition no-print">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-sm sm:text-base font-bold text-slate-900">${escapeHtml(task.task_title)}</h4>
+              <p class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-800">👤 ${escapeHtml(task.officer_name)}</span>
+                <span class="text-slate-300">|</span>
+                <span>📍 ${escapeHtml(task.location)}</span>
+              </p>
+            </div>
+
+            ${task.description ? `<div class="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">${escapeHtml(task.description)}</div>` : ''}
+
+            <!-- Thumbnail Foto & Kompresi -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1">
+              <div class="sm:col-span-5 relative rounded-xl overflow-hidden aspect-video bg-slate-900 cursor-pointer group shadow-2xs" onclick="openPhotoModal('/uploads/${task.image_filename}', '${escapeHtml(task.task_title)} - ${escapeHtml(task.officer_name)}')">
+                <img src="/uploads/${task.image_filename}" alt="Foto Bukti" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold gap-1 transition">
+                  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                  Perbesar Foto
+                </div>
+              </div>
+
+              <div class="sm:col-span-7 space-y-2">
+                <div class="bg-blue-50/70 border border-blue-200/80 p-2 rounded-xl text-[11px] flex items-center justify-between">
+                  <div class="flex items-center gap-1.5 text-blue-950">
+                    <span class="text-blue-700 font-bold">⚡ Kompres:</span>
+                    <span class="line-through text-slate-400">${task.original_size_fmt}</span>
+                    <span class="font-bold text-blue-800">➔ ${task.compressed_size_fmt}</span>
+                  </div>
+                  <span class="font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                    -${task.saved_percent}%
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span><strong>${task.day_name}</strong>, ${task.time_str}</span>
+                  <span>${task.date_str}</span>
+                </div>
+
+                <div class="flex items-center gap-1 pt-1 no-print">
+                  <span class="text-[10px] font-bold text-slate-400 mr-1">Ubah:</span>
+                  <button onclick="changeTaskStatus('${task.id}', 'selesai')" class="text-[10px] font-bold px-2 py-0.5 rounded border ${task.status === 'selesai' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">Selesai</button>
+                  <button onclick="changeTaskStatus('${task.id}', 'proses')" class="text-[10px] font-bold px-2 py-0.5 rounded border ${task.status === 'proses' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">Proses</button>
+                  <button onclick="changeTaskStatus('${task.id}', 'kendala')" class="text-[10px] font-bold px-2 py-0.5 rounded border ${task.status === 'kendala' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">Kendala</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Tabel Logbook Terpadu
+    function renderGlobalTable() {
+      const tableBody = document.getElementById('globalTableBody');
+      const query = (document.getElementById('globalSearchInput').value || '').toLowerCase().trim();
+      const roleFilter = document.getElementById('globalRoleFilter').value;
+      const statusFilter = document.getElementById('globalStatusFilter').value;
+
+      const filtered = allTasks.filter(t => {
+        if (roleFilter !== 'all' && t.role !== roleFilter) return false;
+        if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+        if (query) {
+          const text = `${t.task_title} ${t.officer_name} ${t.location} ${t.description}`.toLowerCase();
+          return text.includes(query);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Tidak ada data laporan yang cocok.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = filtered.map(task => {
+        const cfg = ROLE_CONFIG[task.role] || { icon: '📋', shortName: 'Umum', pillClass: 'bg-slate-100' };
+        const statusBadge = getStatusBadge(task.status);
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-3.5 py-3">
+              <p class="font-bold text-slate-900">${task.day_name}, ${task.time_str}</p>
+              <p class="text-[10px] text-slate-500 font-medium">${task.date_str}</p>
+              <p class="text-[10px] text-blue-700 font-bold mt-0.5">${task.shift}</p>
+            </td>
+            <td class="px-3.5 py-3">
+              <p class="font-bold text-slate-900">${escapeHtml(task.officer_name)}</p>
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold ${cfg.pillClass} mt-1">
+                ${cfg.icon} ${cfg.shortName}
+              </span>
+            </td>
+            <td class="px-3.5 py-3">
+              <p class="font-bold text-slate-900">${escapeHtml(task.task_title)}</p>
+              <p class="text-[11px] text-slate-600">📍 ${escapeHtml(task.location)}</p>
+              ${task.description ? `<p class="text-[10px] text-slate-500 italic mt-0.5">${escapeHtml(task.description)}</p>` : ''}
+            </td>
+            <td class="px-3.5 py-3">
+              <div class="flex items-center gap-2">
+                <img src="/uploads/${task.image_filename}" onclick="openPhotoModal('/uploads/${task.image_filename}', '${escapeHtml(task.task_title)}')" class="w-10 h-10 object-cover rounded-lg border border-slate-300 cursor-pointer shadow-xs">
+                <div>
+                  <p class="text-[10px] font-bold text-emerald-700">${task.compressed_size_fmt}</p>
+                  <p class="text-[9px] text-slate-400 line-through">${task.original_size_fmt}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-3.5 py-3">
+              ${statusBadge}
+            </td>
+            <td class="px-3.5 py-3 no-print">
+              <button onclick="deleteTask('${task.id}')" class="text-rose-600 hover:text-rose-800 text-[11px] font-bold underline">
+                Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Status Badge Helper
+    function getStatusBadge(status) {
+      if (status === 'selesai') {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 Selesai</span>`;
+      } else if (status === 'proses') {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">🟡 Berjalan</span>`;
+      } else {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">🔴 Kendala</span>`;
+      }
+    }
+
+    // Engine Auto-Kompresi (Merespons langsung saat foto dipilih)
+    const photoInput = document.getElementById('photoInput');
+    const dropzone = document.getElementById('dropzone');
+
+    photoInput.addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      originalFileSize = file.size;
+      const officerName = document.getElementById('officerName').value.trim() || 'Petugas Lapangan';
+      const location = document.getElementById('location').value.trim() || 'Area Penugasan';
+      const roleCfg = ROLE_CONFIG[activeRole] || { title: 'Tugas Pendukung' };
+      const watermarkChecked = document.getElementById('watermarkToggle').checked;
+
+      dropzone.innerHTML = `
+        <div class="flex items-center gap-2 text-blue-700 font-bold text-xs animate-pulse">
+          <svg class="w-5 h-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          Mengompres foto otomatis seketika...
+        </div>
+      `;
+
+      try {
+        const result = await SiTugasCompressor.compressImage(file, {
+          maxDim: 1400,
+          quality: 0.78,
+          watermark: watermarkChecked,
+          officerName: officerName,
+          roleName: roleCfg.title,
+          location: location
+        });
+
+        compressedBlob = result.blob;
+
+        dropzone.classList.add('hidden');
+        const resultCard = document.getElementById('compressionResultCard');
+        resultCard.classList.remove('hidden');
+
+        document.getElementById('compOrigSize').textContent = SiTugasCompressor.formatBytes(result.originalSize);
+        document.getElementById('compNewSize').textContent = SiTugasCompressor.formatBytes(result.compressedSize);
+        document.getElementById('compSavedPercent').textContent = `-${result.savedPercent}%`;
+        document.getElementById('compressedPreviewImg').src = result.dataUrl;
+
+        showToast(`Foto otomatis terkompresi (-${result.savedPercent}%)`, '⚡');
+
+      } catch (err) {
+        alert("Gagal mengompres foto: " + err.message);
+        dropzone.classList.remove('hidden');
+        resetDropzone();
+      }
+    });
+
+    function resetDropzone() {
+      dropzone.innerHTML = `
+        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+        <p class="text-xs font-bold text-slate-800">Ambil Foto Kamera HP / Unggah Berkas</p>
+        <p class="text-[11px] text-slate-500">Foto kamera HP 5MB–10MB akan otomatis dikompres seketika</p>
+      `;
+    }
+
+    // Submit Form
+    document.getElementById('taskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (!compressedBlob) {
+        alert("Harap ambil/pilih foto bukti tugas terlebih dahulu.");
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      const submitBtnText = document.getElementById('submitBtnText');
+      submitBtn.disabled = true;
+      submitBtnText.textContent = "Mengunggah Laporan...";
+
+      const formData = new FormData();
+      formData.append('role', document.getElementById('formRoleInput').value);
+      formData.append('task_title', document.getElementById('taskTitle').value.trim());
+      formData.append('officer_name', document.getElementById('officerName').value.trim());
+      formData.append('shift', document.getElementById('shiftSelect').value);
+      formData.append('location', document.getElementById('location').value.trim());
+      formData.append('status', document.getElementById('statusSelect').value);
+      formData.append('task_time', document.getElementById('taskTime').value);
+      formData.append('description', document.getElementById('description').value.trim());
+      formData.append('original_size', originalFileSize);
+      formData.append('photo', compressedBlob, 'bukti_tugas.webp');
+
+      try {
+        const resp = await fetch('/api/tasks', { method: 'POST', body: formData });
+        const data = await resp.json();
+
+        if (!resp.ok) throw new Error(data.error || "Gagal menyimpan laporan.");
+
+        showToast("Laporan berhasil disimpan & foto dikompres!", "✅");
+
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('location').value = '';
+        document.getElementById('description').value = '';
+        compressedBlob = null;
+        originalFileSize = 0;
+        document.getElementById('photoInput').value = '';
+
+        document.getElementById('compressionResultCard').classList.add('hidden');
+        dropzone.classList.remove('hidden');
+        resetDropzone();
+
+        fetchTasks();
+        fetchStats();
+
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtnText.textContent = "Simpan & Laporkan Tugas";
+      }
+    });
+
+    // Ambil Data Tugas
+    async function fetchTasks() {
+      try {
+        const resp = await fetch('/api/tasks');
+        allTasks = await resp.json();
+
+        updateIconBadgeCounts();
+
+        if (currentView === 'role') {
+          renderRoleTasks();
+        } else if (currentView === 'logbook') {
+          renderGlobalTable();
+        }
+
+      } catch (err) {
+        console.error("Gagal memuat data tugas:", err);
+      }
+    }
+
+    // Perbarui Jumlah Tugas di Tiap Ikon Beranda
+    function updateIconBadgeCounts() {
+      const counts = { satpam: 0, cleaning: 0, teknisi: 0, driver: 0, ob: 0 };
+      allTasks.forEach(t => {
+        if (counts[t.role] !== undefined) counts[t.role]++;
+      });
+
+      document.getElementById('badgeCountSatpam').textContent = `${counts.satpam} Tugas`;
+      document.getElementById('badgeCountCleaning').textContent = `${counts.cleaning} Tugas`;
+      document.getElementById('badgeCountTeknisi').textContent = `${counts.teknisi} Tugas`;
+      document.getElementById('badgeCountDriver').textContent = `${counts.driver} Tugas`;
+      document.getElementById('badgeCountOb').textContent = `${counts.ob} Tugas`;
+    }
+
+    // Ambil Statistik
+    async function fetchStats() {
+      try {
+        const resp = await fetch('/api/stats');
+        const stats = await resp.json();
+
+        // Home View Stats
+        document.getElementById('homeStatTotalTasks').textContent = stats.total_tasks || 0;
+        document.getElementById('homeStatSatpam').textContent = stats.by_role?.satpam || 0;
+        document.getElementById('homeStatCompleted').textContent = stats.by_status?.selesai || 0;
+        document.getElementById('homeStatSaved').textContent = stats.total_saved_formatted || '0 B';
+        document.getElementById('badgePercentSaved').textContent = `${stats.percent_saved || 0}% Hemat`;
+
+        // Kompresi Page Stats
+        document.getElementById('statsRawSize').textContent = stats.total_original_formatted || '0 B';
+        document.getElementById('statsCompSize').textContent = stats.total_compressed_formatted || '0 B';
+        document.getElementById('statsSavedSize').textContent = stats.total_saved_formatted || '0 B';
+        document.getElementById('statsSavedPct').textContent = `Hemat ${stats.percent_saved || 0}% kapasitas server`;
+
+      } catch (err) {
+        console.error("Gagal memuat statistik:", err);
+      }
+    }
+
+    // Ganti Status Tugas
+    async function changeTaskStatus(taskId, newStatus) {
+      try {
+        const resp = await fetch(`/api/tasks/${taskId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (resp.ok) {
+          showToast(`Status tugas diubah ke '${newStatus}'`, '🔄');
+          fetchTasks();
+          fetchStats();
+        }
+      } catch (err) {
+        alert("Gagal mengubah status: " + err.message);
+      }
+    }
+
+    // Hapus Tugas
+    async function deleteTask(taskId) {
+      if (!confirm("Apakah Anda yakin ingin menghapus data tugas ini?")) return;
+      try {
+        const resp = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+        if (resp.ok) {
+          showToast("Data tugas berhasil dihapus", "🗑️");
+          fetchTasks();
+          fetchStats();
+        }
+      } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+      }
+    }
+
+    // Modal Cetak Laporan
+    function openPrintModal() {
+      const activeRoleCfg = ROLE_CONFIG[activeRole];
+      document.getElementById('printRoleName').textContent = currentView === 'role' && activeRoleCfg ? activeRoleCfg.title : 'Semua Divisi';
+      document.getElementById('sigName').textContent = document.getElementById('officerName').value || 'Budi Santoso';
+      window.print();
+    }
+
+    // Modal Lightbox
+    function openPhotoModal(imgSrc, caption) {
+      document.getElementById('modalImg').src = imgSrc;
+      document.getElementById('modalCaption').textContent = caption;
+      document.getElementById('modalDownloadLink').href = imgSrc;
+      const modal = document.getElementById('photoModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('photoModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Live Clock & Date
+    function updateClock() {
+      const now = new Date();
+      const dayName = INDONESIAN_DAYS[now.getDay()];
+      const dateStr = `${now.getDate()} ${INDONESIAN_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+      const timeStr = now.toLocaleTimeString('id-ID', { hour12: false }) + ' WIB';
+
+      document.getElementById('liveDayText').textContent = dayName;
+      document.getElementById('liveDateText').textContent = dateStr;
+      document.getElementById('liveTimeText').textContent = timeStr;
+
+      const printEl = document.getElementById('printTimestamp');
+      if (printEl) printEl.textContent = `${dayName}, ${dateStr} - ${timeStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function setInputToNow() {
+      const now = new Date();
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(now.getTime() - tzOffset)).toISOString().slice(0, 16);
+      const timeInput = document.getElementById('taskTime');
+      timeInput.value = localISOTime;
+      updateTimeBadge(now);
+    }
+
+    function updateTimeBadge(dateObj) {
+      const dayName = INDONESIAN_DAYS[dateObj.getDay()];
+      const hours = String(dateObj.getHours()).padStart(2, '0');
+      const mins = String(dateObj.getMinutes()).padStart(2, '0');
+      document.getElementById('parsedDayBadge').textContent = `Hari: ${dayName}`;
+      document.getElementById('parsedTimeBadge').textContent = `Jam: ${hours}:${mins} WIB`;
+    }
+
+    document.getElementById('taskTime').addEventListener('change', function() {
+      if (this.value) {
+        const d = new Date(this.value);
+        if (!isNaN(d.getTime())) updateTimeBadge(d);
+      }
+    });
+    document.getElementById('setNowBtn').addEventListener('click', setInputToNow);
+    setInputToNow();
+
+    // Event Listeners Pencarian
+    document.getElementById('roleSearchInput').addEventListener('input', renderRoleTasks);
+    document.getElementById('globalSearchInput').addEventListener('input', renderGlobalTable);
+    document.getElementById('globalRoleFilter').addEventListener('change', renderGlobalTable);
+    document.getElementById('globalStatusFilter').addEventListener('change', renderGlobalTable);
+
+    function showToast(msg, icon = '✅') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      document.getElementById('toastIcon').textContent = icon;
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+
+    function escapeHtml(string) {
+      if (!string) return '';
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Inisialisasi Pertama
+    fetchTasks();
+    fetchStats();
+  </script>
+</body>
+</html>
